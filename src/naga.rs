@@ -20,9 +20,9 @@ impl Naga {
     }
 
     pub fn validate_wgsl(&mut self, path: &Path) -> Result<(), WgslError> {
-        let shader = std::fs::read_to_string(&path).map_err(WgslError::from)?;
-        let module =
-            wgsl::parse_str(&shader).map_err(|err| WgslError::from_parse_err(err, &shader))?;
+        let (shader, src_map) = crate::pp::load_shader_preprocessed(path)?;
+        let module = wgsl::parse_str(&shader)
+            .map_err(|err| WgslError::from_parse_err(err, &shader, &src_map))?;
 
         if let Err(err) = self.validator.validate(&module) {
             Err(WgslError::ValidationErr(err))
@@ -32,9 +32,9 @@ impl Naga {
     }
 
     pub fn get_wgsl_tree(&mut self, path: &Path) -> Result<WgslTree, WgslError> {
-        let shader = std::fs::read_to_string(&path).map_err(WgslError::from)?;
-        let module =
-            wgsl::parse_str(&shader).map_err(|err| WgslError::from_parse_err(err, &shader))?;
+        let (shader, src_map) = crate::pp::load_shader_preprocessed(path)?;
+        let module = wgsl::parse_str(&shader)
+            .map_err(|err| WgslError::from_parse_err(err, &shader, &src_map))?;
 
         let mut types = Vec::new();
         let mut global_variables = Vec::new();
